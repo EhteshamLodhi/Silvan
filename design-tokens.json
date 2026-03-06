@@ -1,0 +1,22 @@
+{
+  "theme": {
+    "colors": {
+      "primary": "#3E2723",
+      "background-light": "#F5F0E6",
+      "background-dark": "#1E1E1E",
+      "secondary": "#5D4037",
+      "accent": "#D7CCC8"
+    },
+    "fontFamily": {
+      "display": ["Playfair Display", "serif"],
+      "sans": ["Inter", "sans-serif"]
+    },
+    "borderRadius": {
+      "DEFAULT": "1rem",
+      "lg": "1.5rem",
+      "xl": "2rem",
+      "2xl": "2.5rem",
+      "full": "9999px"
+    }
+  }
+}
