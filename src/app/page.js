@@ -1,41 +1,51 @@
-import { getProducts } from '../utils/shopify';
+import { getHomepageDiscoveryData } from '../lib/storefrontData';
 import Header from '../components/stitch/Header';
 import Hero from '../components/stitch/Hero';
 import ShopByBrand from '../components/stitch/ShopByBrand';
 import BespokeService from '../components/stitch/BespokeService';
-import FilterBar from '../components/stitch/FilterBar';
 import FeaturedProducts from '../components/stitch/FeaturedProducts';
-import Showrooms from '../components/stitch/Showrooms';
 import Footer from '../components/stitch/Footer';
 
-export const revalidate = 60; // ISR - revalidate every 60 seconds
+export const revalidate = 60;
 
 export default async function Home() {
-  // MAP: Fetch 3 featured products from Shopify to map into the component
-  const products = await getProducts(3);
+  let homepageData = {
+    brands: [],
+    spaces: [],
+    scenes: [],
+    featuredProducts: [],
+  };
+
+  try {
+    homepageData = await getHomepageDiscoveryData();
+  } catch {
+    homepageData = {
+      brands: [],
+      spaces: [],
+      scenes: [],
+      featuredProducts: [],
+    };
+  }
 
   return (
-    <div className="min-h-screen text-gray-900 font-sans p-4 md:p-8">
-      <div className="max-w-7xl mx-auto flex flex-col h-full">
-        <Header cartCount={0} />
-        
-        <div className="flex flex-col lg:flex-row gap-6 mb-6 h-auto lg:h-[700px]">
-          <Hero />
-          
+    <div className="min-h-screen">
+      <Header />
+      <main className="max-w-7xl mx-auto px-4 md:px-8 pt-6">
+        <div className="flex flex-col lg:flex-row gap-6 mb-6 lg:h-[680px]">
+          <Hero
+            scenes={homepageData.scenes}
+            spaces={homepageData.spaces}
+            featuredProducts={homepageData.featuredProducts}
+          />
           <div className="w-full lg:w-[30%] flex flex-col gap-6 h-full">
-            <ShopByBrand />
+            <ShopByBrand brands={homepageData.brands} />
             <BespokeService />
           </div>
         </div>
-        
-        <FilterBar />
-        
-        <FeaturedProducts products={products} />
-        
-        <Showrooms />
-        
-        <Footer />
-      </div>
+
+        <FeaturedProducts products={homepageData.featuredProducts} />
+      </main>
+      <Footer />
     </div>
   );
 }

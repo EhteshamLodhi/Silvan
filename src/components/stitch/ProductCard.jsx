@@ -1,46 +1,68 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
+import useScrollReveal from '../../hooks/useScrollReveal';
 
-/**
- * ProductCard Component (Stitch Translation)
- * 
- * @param {Object} props
- * @param {Object} props.product - Shopify product object
- */
-export default function ProductCard({ product }) {
-  // MAP: Shopify bindings
-  // product.title -> title
-  // product.priceRange.minVariantPrice.amount -> price
-  // product.images.edges[0].node.url -> image source
-  const handle = product?.handle || "example-handle";
-  const title = product?.title || "The Heritage Carver Chair, Portland Studio";
-  const image = product?.images?.edges[0]?.node?.url || "/assets/home/product-1.jpg";
-  const priceAmount = product?.priceRange?.minVariantPrice?.amount || "1,250";
-  
+function formatMoney(amount, currencyCode = 'USD') {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: currencyCode,
+    maximumFractionDigits: 2,
+  }).format(Number(amount || 0));
+}
+
+export default function ProductCard({ product, staggerIndex = 0 }) {
+  const handle = product?.handle || 'product';
+  const title = product?.title || 'Untitled product';
+  const image = product?.featuredImage?.url || product?.images?.edges?.[0]?.node?.url || '/assets/home/product-1.jpg';
+  const imageAlt = product?.featuredImage?.altText || product?.images?.edges?.[0]?.node?.altText || title;
+  const price = product?.priceRange?.minVariantPrice;
+  const compareAt = product?.compareAtPriceRange?.maxVariantPrice;
+  const descriptor = [product?.vendor, product?.productType].filter(Boolean).join(' · ');
+  const tags = (product?.tags || []).slice(0, 3);
+
+  const { ref, isVisible } = useScrollReveal();
+  const staggerClass = ['stagger-1', 'stagger-2', 'stagger-3'][staggerIndex] || 'stagger-1';
+
   return (
-    <div className="flex flex-col" data-test="product-card">
-        <Link href={`/products/${handle}`} className="aspect-[4/5] rounded-2xl overflow-hidden mb-6 block relative">
-            <Image
-                src={image}
-                alt={title}
-                fill
-                className="absolute inset-0 w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-            />
-        </Link>
-        <div className="flex flex-col space-y-2">
-            <div className="flex justify-between items-start">
-                <h3 className="text-2xl font-semibold text-primary">${parseFloat(priceAmount).toLocaleString()}</h3>
-                <button className="p-2 border border-gray-200 rounded-full hover:bg-primary hover:text-white transition-colors" data-test="add-to-cart">
-                    <span className="material-symbols-outlined text-sm">favorite</span>
-                </button>
-            </div>
-            <div className="flex items-center space-x-3 text-sm text-gray-500">
-                <span>Solid Wood</span>
-                <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                <span>Hand-finished</span>
-            </div>
-            <p className="text-gray-900 font-medium">{title}</p>
+    <div ref={ref} className={`product-card flex flex-col fade-up ${staggerClass} ${isVisible ? 'visible' : ''}`} data-test="product-card">
+      <Link href={`/product/${handle}`} className="group relative mb-5 block aspect-[4/5] overflow-hidden rounded-2xl bg-gray-100">
+        <Image src={image} alt={imageAlt} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
+        {!product?.availableForSale ? (
+          <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary">
+            Sold out
+          </span>
+        ) : null}
+      </Link>
+
+      <div className="flex flex-col space-y-2">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-sm font-medium text-gray-900 leading-snug">{title}</p>
+            {descriptor ? <p className="mt-1 text-xs text-gray-500">{descriptor}</p> : null}
+          </div>
+          <div className="text-right">
+            <h3 className="text-xl font-semibold text-primary">
+              {formatMoney(price?.amount, price?.currencyCode)}
+            </h3>
+            {compareAt?.amount ? (
+              <p className="text-xs text-gray-400 line-through">{formatMoney(compareAt.amount, compareAt.currencyCode)}</p>
+            ) : null}
+          </div>
         </div>
+
+        {tags.length ? (
+          <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-500">
+            {tags.map((tag, index) => (
+              <span key={tag} className="flex items-center gap-2">
+                {index > 0 ? <span className="inline-block h-1 w-1 rounded-full bg-gray-300" /> : null}
+                {tag}
+              </span>
+            ))}
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }
