@@ -82,43 +82,68 @@ export async function getSpacePageData(spaceSlug) {
 }
 
 export async function getStorefrontDirectories() {
-  const collections = await getAllCollections(100);
+  try {
+    const collections = await getAllCollections(100);
 
-  return {
-    collections,
-    brands: buildBrandDirectory(collections),
-    spaces: buildSpaceDirectory(collections),
-  };
+    return {
+      collections,
+      brands: buildBrandDirectory(collections),
+      spaces: buildSpaceDirectory(collections),
+    };
+  } catch {
+    return {
+      collections: [],
+      brands: BRAND_DIRECTORY,
+      spaces: SPACE_DIRECTORY,
+    };
+  }
 }
 
 export async function getShopPageData() {
-  const collections = await getAllCollections(100);
-  const detailedCollections = await getDetailedCollections(collections);
-  const products = mergeCollectionProducts(detailedCollections);
+  try {
+    const collections = await getAllCollections(100);
+    const detailedCollections = await getDetailedCollections(collections);
+    const products = mergeCollectionProducts(detailedCollections);
 
-  return {
-    collections,
-    detailedCollections,
-    products,
-  };
+    return {
+      collections,
+      detailedCollections,
+      products,
+    };
+  } catch {
+    return {
+      collections: [],
+      detailedCollections: [],
+      products: [],
+    };
+  }
 }
 
 export async function getHomepageDiscoveryData() {
-  const { collections, brands, spaces } = await getStorefrontDirectories();
-  const sceneCollections = collections.filter(
-    (collection) =>
-      collection.metafields?.some(
-        (field) => field?.key === 'scene_products' && field?.value,
-      ),
-  );
-  const detailedSceneCollections = await getDetailedCollections(sceneCollections.slice(0, 4), 24);
-  const scenes = hydrateCollectionScenes(detailedSceneCollections);
-  const featuredProducts = await getAllProducts(6);
+  try {
+    const { collections, brands, spaces } = await getStorefrontDirectories();
+    const sceneCollections = collections.filter(
+      (collection) =>
+        collection.metafields?.some(
+          (field) => field?.key === 'scene_products' && field?.value,
+        ),
+    );
+    const detailedSceneCollections = await getDetailedCollections(sceneCollections.slice(0, 4), 24);
+    const scenes = hydrateCollectionScenes(detailedSceneCollections);
+    const featuredProducts = await getAllProducts(6);
 
-  return {
-    brands,
-    spaces,
-    scenes,
-    featuredProducts,
-  };
+    return {
+      brands,
+      spaces,
+      scenes,
+      featuredProducts,
+    };
+  } catch {
+    return {
+      brands: BRAND_DIRECTORY,
+      spaces: SPACE_DIRECTORY,
+      scenes: [],
+      featuredProducts: [],
+    };
+  }
 }

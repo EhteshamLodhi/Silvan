@@ -336,18 +336,26 @@ export async function getCollectionsPage(limit = 24, after = null) {
     }
   `;
 
-  const response = await shopifyFetch({
-    query,
-    variables: { first: limit, after },
-    cache: 'force-cache',
-    tags: ['collections'],
-  });
+  try {
+    const response = await shopifyFetch({
+      query,
+      variables: { first: limit, after },
+      cache: 'force-cache',
+      tags: ['collections'],
+    });
 
-  const connection = response.body?.data?.collections;
-  return {
-    collections: mapConnection(connection),
-    pageInfo: connection?.pageInfo || { hasNextPage: false, endCursor: null },
-  };
+    const connection = response.body?.data?.collections;
+    return {
+      collections: mapConnection(connection),
+      pageInfo: connection?.pageInfo || { hasNextPage: false, endCursor: null },
+    };
+  } catch (error) {
+    console.error('getCollectionsPage error:', error);
+    return {
+      collections: [],
+      pageInfo: { hasNextPage: false, endCursor: null },
+    };
+  }
 }
 
 export async function getAllCollections(limit = 100) {
@@ -433,14 +441,19 @@ export async function getProducts(limit = 12) {
     }
   `;
 
-  const response = await shopifyFetch({
-    query,
-    variables: { first: limit },
-    cache: 'force-cache',
-    tags: ['products'],
-  });
+  try {
+    const response = await shopifyFetch({
+      query,
+      variables: { first: limit },
+      cache: 'force-cache',
+      tags: ['products'],
+    });
 
-  return mapConnection(response.body?.data?.products);
+    return mapConnection(response.body?.data?.products);
+  } catch (error) {
+    console.error('getProducts error:', error);
+    return [];
+  }
 }
 
 export async function getProductsPage(limit = 24, after = null, queryText = '') {
@@ -460,19 +473,27 @@ export async function getProductsPage(limit = 24, after = null, queryText = '') 
     }
   `;
 
-  const response = await shopifyFetch({
-    query,
-    variables: { first: limit, after, query: queryText || null },
-    cache: queryText ? 'no-store' : 'force-cache',
-    tags: queryText ? undefined : ['products'],
-  });
+  try {
+    const response = await shopifyFetch({
+      query,
+      variables: { first: limit, after, query: queryText || null },
+      cache: queryText ? 'no-store' : 'force-cache',
+      tags: queryText ? undefined : ['products'],
+    });
 
-  const connection = response.body?.data?.products;
+    const connection = response.body?.data?.products;
 
-  return {
-    products: mapConnection(connection),
-    pageInfo: connection?.pageInfo || { hasNextPage: false, endCursor: null },
-  };
+    return {
+      products: mapConnection(connection),
+      pageInfo: connection?.pageInfo || { hasNextPage: false, endCursor: null },
+    };
+  } catch (error) {
+    console.error('getProductsPage error:', error);
+    return {
+      products: [],
+      pageInfo: { hasNextPage: false, endCursor: null },
+    };
+  }
 }
 
 export async function getAllProducts(limit = 150, queryText = '') {
